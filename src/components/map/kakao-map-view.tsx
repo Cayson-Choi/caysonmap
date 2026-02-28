@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useKakaoMap } from '@/hooks/use-kakao-map';
+import type { Bookmark } from '@/hooks/use-bookmarks';
 
 const CATEGORY_COLORS: Record<string, string> = {
   FD6: '#ef4444', CE7: '#3b82f6', CS2: '#6366f1', MT1: '#0ea5e9',
@@ -16,14 +17,23 @@ function createMarkerSvg(color: string): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
+function createBookmarkMarkerSvg(): string {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><polygon points="16 2 20.09 10.26 29 11.27 22.5 17.14 24.18 26.02 16 21.77 7.82 26.02 9.5 17.14 3 11.27 11.91 10.26 16 2" fill="#f59e0b" stroke="white" stroke-width="1.5"/></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
 interface KakaoMapViewProps {
   center: { lat: number; lng: number };
   zoom: number;
   radius: number;
   activeCategories: string[];
   searchVersion: number;
+  bookmarks?: Bookmark[];
   onCenterChanged?: (lat: number, lng: number) => void;
   onZoomChanged?: (zoom: number) => void;
+  onMapClick?: (lat: number, lng: number) => void;
+  onAddBookmark?: (name: string, lat: number, lng: number, address: string) => void;
+  onRemoveBookmark?: (id: string) => void;
 }
 
 export default function KakaoMapView({
@@ -32,17 +42,36 @@ export default function KakaoMapView({
   radius,
   activeCategories,
   searchVersion,
+  bookmarks,
   onCenterChanged,
   onZoomChanged,
+  onMapClick,
+  onAddBookmark,
+  onRemoveBookmark,
 }: KakaoMapViewProps) {
   const { mapRef, mapInstanceRef, updateCenter, updateZoom, ready, error } = useKakaoMap({
-    center, zoom, onCenterChanged, onZoomChanged,
+    center, zoom, onCenterChanged, onZoomChanged, onMapClick,
   });
 
   const isInitialCenter = useRef(true);
   const markersRef = useRef<Map<string, kakao.maps.Marker[]>>(new Map());
   const infoWindowRef = useRef<kakao.maps.InfoWindow | null>(null);
   const markerImagesRef = useRef<Map<string, kakao.maps.MarkerImage>>(new Map());
+  const bookmarkMarkersRef = useRef<kakao.maps.Marker[]>([]);
+
+  // Global callback for bookmark deletion from InfoWindow
+  const removeBookmarkRef = useRef(onRemoveBookmark);
+  removeBookmarkRef.current = onRemoveBookmark;
+
+  useEffect(() => {
+    (window as unknown as Record<string, unknown>).__removeBookmark = (id: string) => {
+      removeBookmarkRef.current?.(id);
+      infoWindowRef.current?.close();
+    };
+    return () => {
+      delete (window as unknown as Record<string, unknown>).__removeBookmark;
+    };
+  }, []);
 
   // Sync center from store → map
   useEffect(() => {
@@ -72,6 +101,19 @@ export default function KakaoMapView({
     circle.setMap(map);
     return () => { circle.setMap(null); };
   }, [center.lat, center.lng, radius, ready, mapInstanceRef]);
+
+  // Global callback for bookmark add from InfoWindow
+  const addBookmarkRef = useRef(onAddBookmark);
+  addBookmarkRef.current = onAddBookmark;
+
+  useEffect(() => {
+    (window as unknown as Record<string, unknown>).__addBookmark = (name: string, lat: number, lng: number, address: string) => {
+      addBookmarkRef.current?.(name, lat, lng, address);
+    };
+    return () => {
+      delete (window as unknown as Record<string, unknown>).__addBookmark;
+    };
+  }, []);
 
   // Category markers
   useEffect(() => {
@@ -115,10 +157,14 @@ export default function KakaoMapView({
             });
             kakao.maps.event.addListener(marker, 'click', () => {
               infoWindowRef.current?.close();
+              const addr = place.road_address_name || place.address_name;
+              const escapedName = place.place_name.replace(/'/g, "\\'");
+              const escapedAddr = addr.replace(/'/g, "\\'");
               const content = `<div style="padding:8px 12px;min-width:180px;max-width:260px;">
                 <a href="${place.place_url}" target="_blank" rel="noopener noreferrer" style="font-size:14px;font-weight:600;color:#2563eb;text-decoration:none;">${place.place_name}</a>
-                <p style="font-size:12px;color:#666;margin:4px 0 0;">${place.road_address_name || place.address_name}</p>
+                <p style="font-size:12px;color:#666;margin:4px 0 0;">${addr}</p>
                 ${place.phone ? `<p style="font-size:12px;color:#666;margin:2px 0 0;">${place.phone}</p>` : ''}
+                ${onAddBookmark ? `<button onclick="window.__addBookmark('${escapedName}',${place.y},${place.x},'${escapedAddr}')" style="margin-top:6px;padding:2px 8px;font-size:12px;background:#f59e0b;color:white;border:none;border-radius:4px;cursor:pointer;">&#9733; 즐겨찾기</button>` : ''}
               </div>`;
               const iw = new kakao.maps.InfoWindow({ content, removable: true });
               iw.open(map, marker);
@@ -139,6 +185,51 @@ export default function KakaoMapView({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCategories, radius, searchVersion, ready]);
+
+  // Bookmark markers
+  useEffect(() => {
+    if (!ready || !mapInstanceRef.current) return;
+    const map = mapInstanceRef.current;
+
+    // Cleanup previous bookmark markers
+    bookmarkMarkersRef.current.forEach((m) => m.setMap(null));
+    bookmarkMarkersRef.current = [];
+
+    if (!bookmarks || bookmarks.length === 0) return;
+
+    const bookmarkImage = new kakao.maps.MarkerImage(
+      createBookmarkMarkerSvg(),
+      new kakao.maps.Size(32, 32),
+      { offset: new kakao.maps.Point(16, 16) },
+    );
+
+    bookmarks.forEach((bm) => {
+      const marker = new kakao.maps.Marker({
+        position: new kakao.maps.LatLng(bm.lat, bm.lng),
+        map,
+        image: bookmarkImage,
+      });
+
+      kakao.maps.event.addListener(marker, 'click', () => {
+        infoWindowRef.current?.close();
+        const content = `<div style="padding:8px 12px;min-width:180px;max-width:260px;">
+          <p style="font-size:14px;font-weight:600;color:#f59e0b;margin:0;">&#9733; ${bm.name}</p>
+          ${bm.address ? `<p style="font-size:12px;color:#666;margin:4px 0 0;">${bm.address}</p>` : ''}
+          <button onclick="window.__removeBookmark('${bm.id}')" style="margin-top:6px;padding:2px 8px;font-size:12px;background:#ef4444;color:white;border:none;border-radius:4px;cursor:pointer;">삭제</button>
+        </div>`;
+        const iw = new kakao.maps.InfoWindow({ content, removable: true });
+        iw.open(map, marker);
+        infoWindowRef.current = iw;
+      });
+
+      bookmarkMarkersRef.current.push(marker);
+    });
+
+    return () => {
+      bookmarkMarkersRef.current.forEach((m) => m.setMap(null));
+      bookmarkMarkersRef.current = [];
+    };
+  }, [bookmarks, ready, mapInstanceRef]);
 
   return (
     <div className="w-full h-full relative">

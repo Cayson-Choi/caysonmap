@@ -7,6 +7,7 @@ interface UseKakaoMapOptions {
   zoom: number;
   onCenterChanged?: (lat: number, lng: number) => void;
   onZoomChanged?: (zoom: number) => void;
+  onMapClick?: (lat: number, lng: number) => void;
 }
 
 function zoomToKakaoLevel(zoom: number): number {
@@ -45,7 +46,7 @@ function waitForKakaoMaps(timeout = 10000): Promise<void> {
   });
 }
 
-export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged }: UseKakaoMapOptions) {
+export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged, onMapClick }: UseKakaoMapOptions) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<kakao.maps.Map | null>(null);
   const isExternalUpdate = useRef(false);
@@ -93,6 +94,11 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
           kakao.maps.event.addListener(map, 'zoom_changed', () => {
             if (isExternalUpdate.current) return;
             onZoomChanged?.(kakaoLevelToZoom(map.getLevel()));
+          });
+
+          kakao.maps.event.addListener(map, 'click', (...args: unknown[]) => {
+            const mouseEvent = args[0] as kakao.maps.event.MouseEvent;
+            onMapClick?.(mouseEvent.latLng.getLat(), mouseEvent.latLng.getLng());
           });
         } catch (err) {
           if (!destroyed) setError(err instanceof Error ? err.message : '지도 초기화 실패');

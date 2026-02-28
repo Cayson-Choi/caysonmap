@@ -33,6 +33,11 @@
     "searchPlaceholder": "Search address...",
     "zoomIn": "Zoom In",
     "zoomOut": "Zoom Out",
+    "noResults": "No results found",
+    "bookmark": "Bookmark",
+    "addBookmark": "Add Bookmark",
+    "removeBookmark": "Remove Bookmark",
+    "bookmarkName": "Place name",
     "categories": {
       "FD6": "Restaurant",
       "CE7": "Cafe",
