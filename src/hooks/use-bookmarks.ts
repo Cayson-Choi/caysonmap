@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 export interface Bookmark {
@@ -15,9 +15,10 @@ export interface Bookmark {
 export function useBookmarks() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
-  const supabase = createClient();
+  const supabaseRef = useRef(createClient());
 
   const fetchBookmarks = useCallback(async () => {
+    const supabase = supabaseRef.current;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       setBookmarks([]);
@@ -33,13 +34,14 @@ export function useBookmarks() {
 
     setBookmarks(data ?? []);
     setLoading(false);
-  }, [supabase]);
+  }, []);
 
   useEffect(() => {
     fetchBookmarks();
   }, [fetchBookmarks]);
 
   const addBookmark = useCallback(async (name: string, lat: number, lng: number, address?: string) => {
+    const supabase = supabaseRef.current;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
@@ -53,9 +55,10 @@ export function useBookmarks() {
       setBookmarks((prev) => [data, ...prev]);
     }
     return data;
-  }, [supabase]);
+  }, []);
 
   const removeBookmark = useCallback(async (id: string) => {
+    const supabase = supabaseRef.current;
     const { error } = await supabase
       .from('bookmarks')
       .delete()
@@ -64,7 +67,11 @@ export function useBookmarks() {
     if (!error) {
       setBookmarks((prev) => prev.filter((b) => b.id !== id));
     }
-  }, [supabase]);
+  }, []);
 
-  return { bookmarks, loading, addBookmark, removeBookmark, refetch: fetchBookmarks };
+  const isBookmarked = useCallback((lat: number, lng: number) => {
+    return bookmarks.some((b) => Math.abs(b.lat - lat) < 0.0001 && Math.abs(b.lng - lng) < 0.0001);
+  }, [bookmarks]);
+
+  return { bookmarks, loading, addBookmark, removeBookmark, isBookmarked, refetch: fetchBookmarks };
 }

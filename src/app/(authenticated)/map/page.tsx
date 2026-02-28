@@ -24,7 +24,11 @@ export default function MapPage() {
       <div className="h-[calc(100vh-64px)] relative">
         {/* Address search - top left */}
         <div className="absolute top-4 left-4 z-10">
-          <AddressSearch onAddBookmark={handleAddBookmark} />
+          <AddressSearch
+            bookmarks={bookmarks}
+            onAddBookmark={handleAddBookmark}
+            onRemoveBookmark={removeBookmark}
+          />
         </div>
 
         {/* Control panel - top right */}

@@ -38,6 +38,7 @@
     "addBookmark": "Add Bookmark",
     "removeBookmark": "Remove Bookmark",
     "bookmarkName": "Place name",
+    "bookmarkAdded": "Added to bookmarks",
     "categories": {
       "FD6": "Restaurant",
       "CE7": "Cafe",

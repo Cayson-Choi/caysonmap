@@ -8,6 +8,7 @@ interface UseKakaoMapOptions {
   onCenterChanged?: (lat: number, lng: number) => void;
   onZoomChanged?: (zoom: number) => void;
   onMapClick?: (lat: number, lng: number) => void;
+  onRightClick?: (lat: number, lng: number) => void;
 }
 
 function zoomToKakaoLevel(zoom: number): number {
@@ -46,7 +47,7 @@ function waitForKakaoMaps(timeout = 10000): Promise<void> {
   });
 }
 
-export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged, onMapClick }: UseKakaoMapOptions) {
+export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged, onMapClick, onRightClick }: UseKakaoMapOptions) {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<kakao.maps.Map | null>(null);
   const isExternalUpdate = useRef(false);
@@ -102,6 +103,11 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged, onMa
           kakao.maps.event.addListener(map, 'click', (...args: unknown[]) => {
             const mouseEvent = args[0] as kakao.maps.event.MouseEvent;
             onMapClick?.(mouseEvent.latLng.getLat(), mouseEvent.latLng.getLng());
+          });
+
+          kakao.maps.event.addListener(map, 'rightclick', (...args: unknown[]) => {
+            const mouseEvent = args[0] as kakao.maps.event.MouseEvent;
+            onRightClick?.(mouseEvent.latLng.getLat(), mouseEvent.latLng.getLng());
           });
         } catch (err) {
           if (!destroyed) setError(err instanceof Error ? err.message : '지도 초기화 실패');

@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useMapStore } from '@/stores/map-store';
+import type { Bookmark } from '@/hooks/use-bookmarks';
 
 interface PlaceResult {
   id: string;
@@ -14,10 +15,12 @@ interface PlaceResult {
 }
 
 interface AddressSearchProps {
+  bookmarks?: Bookmark[];
   onAddBookmark?: (name: string, lat: number, lng: number, address: string) => void;
+  onRemoveBookmark?: (id: string) => void;
 }
 
-export default function AddressSearch({ onAddBookmark }: AddressSearchProps) {
+export default function AddressSearch({ bookmarks, onAddBookmark, onRemoveBookmark }: AddressSearchProps) {
   const t = useTranslations('map');
   const { setCenter, setSelectedLocation, triggerSearch } = useMapStore();
   const [query, setQuery] = useState('');
@@ -26,6 +29,10 @@ export default function AddressSearch({ onAddBookmark }: AddressSearchProps) {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const findBookmark = useCallback((lat: number, lng: number) => {
+    return bookmarks?.find((b) => Math.abs(b.lat - lat) < 0.0001 && Math.abs(b.lng - lng) < 0.0001);
+  }, [bookmarks]);
 
   const searchPlaces = useCallback((keyword: string) => {
     if (!keyword.trim()) {
@@ -132,40 +139,51 @@ export default function AddressSearch({ onAddBookmark }: AddressSearchProps) {
           {suggestions.length === 0 ? (
             <div className="px-4 py-3 text-sm text-muted">{t('noResults')}</div>
           ) : (
-            suggestions.map((place, index) => (
-              <div
-                key={place.id}
-                className={`flex items-center px-4 py-2.5 cursor-pointer text-sm transition-colors ${
-                  index === selectedIndex ? 'bg-accent' : 'hover:bg-accent/50'
-                }`}
-                onClick={() => selectPlace(place)}
-                onMouseEnter={() => setSelectedIndex(index)}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{place.place_name}</p>
-                  <p className="text-xs text-muted truncate">{place.road_address_name || place.address_name}</p>
-                </div>
-                {onAddBookmark && (
+            suggestions.map((place, index) => {
+              const lat = parseFloat(place.y);
+              const lng = parseFloat(place.x);
+              const existingBookmark = findBookmark(lat, lng);
+              const isBookmarked = !!existingBookmark;
+
+              return (
+                <div
+                  key={place.id}
+                  className={`flex items-center px-4 py-2.5 cursor-pointer text-sm transition-colors ${
+                    index === selectedIndex ? 'bg-accent' : 'hover:bg-accent/50'
+                  }`}
+                  onClick={() => selectPlace(place)}
+                  onMouseEnter={() => setSelectedIndex(index)}
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{place.place_name}</p>
+                    <p className="text-xs text-muted truncate">{place.road_address_name || place.address_name}</p>
+                  </div>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onAddBookmark(
-                        place.place_name,
-                        parseFloat(place.y),
-                        parseFloat(place.x),
-                        place.road_address_name || place.address_name,
-                      );
+                      if (isBookmarked && onRemoveBookmark) {
+                        onRemoveBookmark(existingBookmark.id);
+                      } else if (onAddBookmark) {
+                        onAddBookmark(
+                          place.place_name,
+                          lat,
+                          lng,
+                          place.road_address_name || place.address_name,
+                        );
+                      }
                     }}
-                    className="ml-2 p-1 text-muted hover:text-yellow-500 transition-colors flex-shrink-0"
-                    title={t('addBookmark')}
+                    className={`ml-2 p-1 transition-colors flex-shrink-0 ${
+                      isBookmarked ? 'text-yellow-500' : 'text-muted hover:text-yellow-500'
+                    }`}
+                    title={isBookmarked ? t('removeBookmark') : t('addBookmark')}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill={isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2">
                       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                     </svg>
                   </button>
-                )}
-              </div>
-            ))
+                </div>
+              );
+            })
           )}
         </div>
       )}

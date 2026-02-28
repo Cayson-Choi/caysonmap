@@ -33,6 +33,7 @@ interface KakaoMapViewProps {
   onCenterChanged?: (lat: number, lng: number) => void;
   onZoomChanged?: (zoom: number) => void;
   onMapClick?: (lat: number, lng: number) => void;
+  onRightClick?: (lat: number, lng: number) => void;
   onAddBookmark?: (name: string, lat: number, lng: number, address: string) => void;
   onRemoveBookmark?: (id: string) => void;
 }
@@ -48,11 +49,12 @@ export default function KakaoMapView({
   onCenterChanged,
   onZoomChanged,
   onMapClick,
+  onRightClick,
   onAddBookmark,
   onRemoveBookmark,
 }: KakaoMapViewProps) {
   const { mapRef, mapInstanceRef, updateCenter, updateZoom, ready, error } = useKakaoMap({
-    center, zoom, onCenterChanged, onZoomChanged, onMapClick,
+    center, zoom, onCenterChanged, onZoomChanged, onMapClick, onRightClick,
   });
 
   const isInitialCenter = useRef(true);

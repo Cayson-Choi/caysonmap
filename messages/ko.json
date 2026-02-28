@@ -38,6 +38,7 @@
     "addBookmark": "즐겨찾기 추가",
     "removeBookmark": "즐겨찾기 삭제",
     "bookmarkName": "장소 이름",
+    "bookmarkAdded": "즐겨찾기에 추가되었습니다",
     "categories": {
       "FD6": "음식점",
       "CE7": "카페",
