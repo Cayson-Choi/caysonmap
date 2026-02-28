@@ -27,8 +27,32 @@
     "kakao": "Kakao Map",
     "openInNaver": "Open in Naver Map",
     "myLocation": "My Location",
+    "currentLocation": "My Location",
+    "radius": "Radius",
+    "layers": "Layers",
+    "searchPlaceholder": "Search address...",
     "zoomIn": "Zoom In",
-    "zoomOut": "Zoom Out"
+    "zoomOut": "Zoom Out",
+    "categories": {
+      "FD6": "Restaurant",
+      "CE7": "Cafe",
+      "CS2": "Convenience",
+      "MT1": "Mart",
+      "HP8": "Hospital",
+      "PM9": "Pharmacy",
+      "AC5": "Academy",
+      "SC4": "School",
+      "AD5": "Lodging",
+      "BK9": "Bank",
+      "PS3": "Daycare",
+      "PK6": "Parking",
+      "OL7": "Gas Station",
+      "SW8": "Subway",
+      "CT1": "Culture",
+      "AG2": "Realtor",
+      "PO3": "Government",
+      "AT4": "Tourism"
+    }
   },
   "profile": {
     "title": "Profile",

@@ -9,7 +9,6 @@ interface UseKakaoMapOptions {
   onZoomChanged?: (zoom: number) => void;
 }
 
-// 줌 레벨(1-21)과 카카오맵 레벨(1-14, 값이 클수록 축소)을 변환
 function zoomToKakaoLevel(zoom: number): number {
   return Math.max(1, Math.min(14, 21 - zoom));
 }
@@ -24,7 +23,7 @@ function waitForKakaoMaps(timeout = 10000): Promise<void> {
       try {
         kakao.maps.load(() => resolve());
       } catch {
-        reject(new Error('Kakao Maps SDK 초기화 실패 - 앱 키 또는 플랫폼 도메인 설정을 확인하세요'));
+        reject(new Error('Kakao Maps SDK 초기화 실패'));
       }
     };
 
@@ -40,7 +39,7 @@ function waitForKakaoMaps(timeout = 10000): Promise<void> {
         tryLoad();
       } else if (Date.now() - start > timeout) {
         clearInterval(interval);
-        reject(new Error('Kakao Maps SDK 로딩 시간 초과 - 앱 키를 확인하세요'));
+        reject(new Error('Kakao Maps SDK 로딩 시간 초과'));
       }
     }, 100);
   });
@@ -53,26 +52,19 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const updateCenter = useCallback(
-    (lat: number, lng: number) => {
-      if (mapInstanceRef.current) {
-        isExternalUpdate.current = true;
-        mapInstanceRef.current.setCenter(new kakao.maps.LatLng(lat, lng));
-        setTimeout(() => {
-          isExternalUpdate.current = false;
-        }, 100);
-      }
-    },
-    [],
-  );
+  const updateCenter = useCallback((lat: number, lng: number) => {
+    if (mapInstanceRef.current) {
+      isExternalUpdate.current = true;
+      mapInstanceRef.current.setCenter(new kakao.maps.LatLng(lat, lng));
+      setTimeout(() => { isExternalUpdate.current = false; }, 100);
+    }
+  }, []);
 
   const updateZoom = useCallback((zoom: number) => {
     if (mapInstanceRef.current) {
       isExternalUpdate.current = true;
       mapInstanceRef.current.setLevel(zoomToKakaoLevel(zoom));
-      setTimeout(() => {
-        isExternalUpdate.current = false;
-      }, 100);
+      setTimeout(() => { isExternalUpdate.current = false; }, 100);
     }
   }, []);
 
@@ -83,7 +75,6 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
     waitForKakaoMaps()
       .then(() => {
         if (destroyed || !mapRef.current) return;
-
         try {
           const map = new kakao.maps.Map(mapRef.current, {
             center: new kakao.maps.LatLng(center.lat, center.lng),
@@ -108,7 +99,6 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
         }
       })
       .catch((err) => {
-        console.error('[KakaoMap] SDK load failed:', err);
         if (!destroyed) setError(err.message || 'SDK 로딩 실패');
       });
 
@@ -119,5 +109,5 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { mapRef, updateCenter, updateZoom, ready, error };
+  return { mapRef, mapInstanceRef, updateCenter, updateZoom, ready, error };
 }

@@ -9,7 +9,7 @@ export default function MapScripts() {
     <>
       {kakaoAppKey && (
         <Script
-          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoAppKey}&autoload=false`}
+          src={`https://dapi.kakao.com/v2/maps/sdk.js?appkey=${kakaoAppKey}&autoload=false&libraries=services`}
           strategy="afterInteractive"
         />
       )}
