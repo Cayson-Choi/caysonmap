@@ -1,0 +1,52 @@
+{
+  "common": {
+    "appName": "CasyonMap",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "OK",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "signup": "Sign Up",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "nickname": "Nickname",
+    "loginWithGoogle": "Login with Google",
+    "loginWithKakao": "Login with Kakao",
+    "loginWithEmail": "Login with Email",
+    "signupWithEmail": "Sign up with Email",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "orContinueWith": "or"
+  },
+  "map": {
+    "naver": "Naver Map",
+    "kakao": "Kakao Map",
+    "both": "Both",
+    "myLocation": "My Location",
+    "zoomIn": "Zoom In",
+    "zoomOut": "Zoom Out"
+  },
+  "profile": {
+    "title": "Profile",
+    "nickname": "Nickname",
+    "email": "Email",
+    "preferredMap": "Preferred Map",
+    "theme": "Theme",
+    "language": "Language",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "korean": "한국어",
+    "english": "English",
+    "saveSuccess": "Settings saved successfully"
+  },
+  "nav": {
+    "map": "Map",
+    "profile": "Profile"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "common": {
+    "appName": "CasyonMap",
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "save": "저장",
+    "cancel": "취소",
+    "confirm": "확인",
+    "logout": "로그아웃"
+  },
+  "auth": {
+    "login": "로그인",
+    "signup": "회원가입",
+    "email": "이메일",
+    "password": "비밀번호",
+    "confirmPassword": "비밀번호 확인",
+    "nickname": "닉네임",
+    "loginWithGoogle": "Google로 로그인",
+    "loginWithKakao": "카카오로 로그인",
+    "loginWithEmail": "이메일로 로그인",
+    "signupWithEmail": "이메일로 회원가입",
+    "noAccount": "계정이 없으신가요?",
+    "hasAccount": "이미 계정이 있으신가요?",
+    "orContinueWith": "또는"
+  },
+  "map": {
+    "naver": "네이버 지도",
+    "kakao": "카카오 지도",
+    "both": "동시 보기",
+    "myLocation": "내 위치",
+    "zoomIn": "확대",
+    "zoomOut": "축소"
+  },
+  "profile": {
+    "title": "프로필",
+    "nickname": "닉네임",
+    "email": "이메일",
+    "preferredMap": "선호 지도",
+    "theme": "테마",
+    "language": "언어",
+    "light": "라이트",
+    "dark": "다크",
+    "system": "시스템",
+    "korean": "한국어",
+    "english": "English",
+    "saveSuccess": "설정이 저장되었습니다"
+  },
+  "nav": {
+    "map": "지도",
+    "profile": "프로필"
+  }
+}
