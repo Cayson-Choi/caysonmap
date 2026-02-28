@@ -147,36 +147,43 @@ export default function KakaoMapView({
       }
       const markerImage = markerImagesRef.current.get(code)!;
 
+      const createMarkersFromResult = (result: kakao.maps.services.PlaceResult[]) => {
+        return result.map((place) => {
+          const marker = new kakao.maps.Marker({
+            position: new kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x)),
+            map,
+            image: markerImage,
+          });
+          kakao.maps.event.addListener(marker, 'click', () => {
+            infoWindowRef.current?.close();
+            const addr = place.road_address_name || place.address_name;
+            const escapedName = place.place_name.replace(/'/g, "\\'");
+            const escapedAddr = addr.replace(/'/g, "\\'");
+            const content = `<div style="padding:8px 12px;min-width:180px;max-width:260px;">
+              <a href="${place.place_url}" target="_blank" rel="noopener noreferrer" style="font-size:14px;font-weight:600;color:#2563eb;text-decoration:none;">${place.place_name}</a>
+              <p style="font-size:12px;color:#666;margin:4px 0 0;">${addr}</p>
+              ${place.phone ? `<p style="font-size:12px;color:#666;margin:2px 0 0;">${place.phone}</p>` : ''}
+              ${onAddBookmark ? `<button onclick="window.__addBookmark('${escapedName}',${place.y},${place.x},'${escapedAddr}')" style="margin-top:6px;padding:2px 8px;font-size:12px;background:#f59e0b;color:white;border:none;border-radius:4px;cursor:pointer;">&#9733; 즐겨찾기</button>` : ''}
+            </div>`;
+            const iw = new kakao.maps.InfoWindow({ content, removable: true });
+            iw.open(map, marker);
+            infoWindowRef.current = iw;
+          });
+          return marker;
+        });
+      };
+
       places.categorySearch(
         code,
-        (result, status) => {
+        (result, status, pagination) => {
           if (status !== kakao.maps.services.Status.OK) return;
-          const markers = result.map((place) => {
-            const marker = new kakao.maps.Marker({
-              position: new kakao.maps.LatLng(parseFloat(place.y), parseFloat(place.x)),
-              map,
-              image: markerImage,
-            });
-            kakao.maps.event.addListener(marker, 'click', () => {
-              infoWindowRef.current?.close();
-              const addr = place.road_address_name || place.address_name;
-              const escapedName = place.place_name.replace(/'/g, "\\'");
-              const escapedAddr = addr.replace(/'/g, "\\'");
-              const content = `<div style="padding:8px 12px;min-width:180px;max-width:260px;">
-                <a href="${place.place_url}" target="_blank" rel="noopener noreferrer" style="font-size:14px;font-weight:600;color:#2563eb;text-decoration:none;">${place.place_name}</a>
-                <p style="font-size:12px;color:#666;margin:4px 0 0;">${addr}</p>
-                ${place.phone ? `<p style="font-size:12px;color:#666;margin:2px 0 0;">${place.phone}</p>` : ''}
-                ${onAddBookmark ? `<button onclick="window.__addBookmark('${escapedName}',${place.y},${place.x},'${escapedAddr}')" style="margin-top:6px;padding:2px 8px;font-size:12px;background:#f59e0b;color:white;border:none;border-radius:4px;cursor:pointer;">&#9733; 즐겨찾기</button>` : ''}
-              </div>`;
-              const iw = new kakao.maps.InfoWindow({ content, removable: true });
-              iw.open(map, marker);
-              infoWindowRef.current = iw;
-            });
-            return marker;
-          });
-          markersRef.current.set(code, markers);
+          const prev = markersRef.current.get(code) ?? [];
+          markersRef.current.set(code, [...prev, ...createMarkersFromResult(result)]);
+          if (pagination.hasNextPage) {
+            pagination.nextPage();
+          }
         },
-        { location: searchCenter, radius, sort: kakao.maps.services.SortBy.DISTANCE },
+        { location: searchCenter, radius, size: 15, sort: kakao.maps.services.SortBy.DISTANCE },
       );
     });
 
