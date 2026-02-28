@@ -67,31 +67,32 @@ export function useNaverMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
       .then(() => {
         if (destroyed || !mapRef.current) return;
 
-        console.log('[NaverMap] SDK loaded, creating map...');
-        console.log('[NaverMap] Current URL:', window.location.href);
+        try {
+          const map = new naver.maps.Map(mapRef.current, {
+            center: new naver.maps.LatLng(center.lat, center.lng),
+            zoom,
+            zoomControl: true,
+            zoomControlOptions: {
+              position: naver.maps.Position.TOP_RIGHT,
+            },
+          });
 
-        const map = new naver.maps.Map(mapRef.current, {
-          center: new naver.maps.LatLng(center.lat, center.lng),
-          zoom,
-          zoomControl: true,
-          zoomControlOptions: {
-            position: naver.maps.Position.TOP_RIGHT,
-          },
-        });
+          mapInstanceRef.current = map;
+          setReady(true);
 
-        mapInstanceRef.current = map;
-        setReady(true);
+          naver.maps.Event.addListener(map, 'center_changed', () => {
+            if (isExternalUpdate.current) return;
+            const c = map.getCenter();
+            onCenterChanged?.(c.lat(), c.lng());
+          });
 
-        naver.maps.Event.addListener(map, 'center_changed', () => {
-          if (isExternalUpdate.current) return;
-          const c = map.getCenter();
-          onCenterChanged?.(c.lat(), c.lng());
-        });
-
-        naver.maps.Event.addListener(map, 'zoom_changed', () => {
-          if (isExternalUpdate.current) return;
-          onZoomChanged?.(map.getZoom());
-        });
+          naver.maps.Event.addListener(map, 'zoom_changed', () => {
+            if (isExternalUpdate.current) return;
+            onZoomChanged?.(map.getZoom());
+          });
+        } catch (err) {
+          if (!destroyed) setError(err instanceof Error ? err.message : '지도 초기화 실패');
+        }
       })
       .catch((err) => {
         console.error('[NaverMap] SDK load failed:', err);

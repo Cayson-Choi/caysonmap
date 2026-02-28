@@ -20,8 +20,16 @@ function kakaoLevelToNaverZoom(kakaoLevel: number): number {
 
 function waitForKakaoMaps(timeout = 10000): Promise<void> {
   return new Promise((resolve, reject) => {
+    const tryLoad = () => {
+      try {
+        kakao.maps.load(() => resolve());
+      } catch {
+        reject(new Error('Kakao Maps SDK 초기화 실패 - 앱 키 또는 플랫폼 도메인 설정을 확인하세요'));
+      }
+    };
+
     if (typeof kakao !== 'undefined' && kakao.maps) {
-      kakao.maps.load(() => resolve());
+      tryLoad();
       return;
     }
 
@@ -29,10 +37,10 @@ function waitForKakaoMaps(timeout = 10000): Promise<void> {
     const interval = setInterval(() => {
       if (typeof kakao !== 'undefined' && kakao.maps) {
         clearInterval(interval);
-        kakao.maps.load(() => resolve());
+        tryLoad();
       } else if (Date.now() - start > timeout) {
         clearInterval(interval);
-        reject(new Error('Kakao Maps SDK load timeout'));
+        reject(new Error('Kakao Maps SDK 로딩 시간 초과 - 앱 키를 확인하세요'));
       }
     }, 100);
   });
@@ -76,24 +84,28 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
       .then(() => {
         if (destroyed || !mapRef.current) return;
 
-        const map = new kakao.maps.Map(mapRef.current, {
-          center: new kakao.maps.LatLng(center.lat, center.lng),
-          level: naverZoomToKakaoLevel(zoom),
-        });
+        try {
+          const map = new kakao.maps.Map(mapRef.current, {
+            center: new kakao.maps.LatLng(center.lat, center.lng),
+            level: naverZoomToKakaoLevel(zoom),
+          });
 
-        mapInstanceRef.current = map;
-        setReady(true);
+          mapInstanceRef.current = map;
+          setReady(true);
 
-        kakao.maps.event.addListener(map, 'center_changed', () => {
-          if (isExternalUpdate.current) return;
-          const c = map.getCenter();
-          onCenterChanged?.(c.getLat(), c.getLng());
-        });
+          kakao.maps.event.addListener(map, 'center_changed', () => {
+            if (isExternalUpdate.current) return;
+            const c = map.getCenter();
+            onCenterChanged?.(c.getLat(), c.getLng());
+          });
 
-        kakao.maps.event.addListener(map, 'zoom_changed', () => {
-          if (isExternalUpdate.current) return;
-          onZoomChanged?.(kakaoLevelToNaverZoom(map.getLevel()));
-        });
+          kakao.maps.event.addListener(map, 'zoom_changed', () => {
+            if (isExternalUpdate.current) return;
+            onZoomChanged?.(kakaoLevelToNaverZoom(map.getLevel()));
+          });
+        } catch (err) {
+          if (!destroyed) setError(err instanceof Error ? err.message : '지도 초기화 실패');
+        }
       })
       .catch((err) => {
         console.error('[KakaoMap] SDK load failed:', err);
