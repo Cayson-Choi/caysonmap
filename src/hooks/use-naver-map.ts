@@ -101,7 +101,11 @@ export function useNaverMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
 
     return () => {
       destroyed = true;
-      mapInstanceRef.current?.destroy();
+      try {
+        mapInstanceRef.current?.destroy();
+      } catch {
+        // Naver map destroy can fail if auth failed during init
+      }
       mapInstanceRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

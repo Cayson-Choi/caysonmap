@@ -11,7 +11,7 @@ interface MapState {
 }
 
 export const useMapStore = create<MapState>((set) => ({
-  mode: 'naver',
+  mode: 'kakao',
   center: { lat: 37.5665, lng: 126.978 }, // 서울 시청
   zoom: 13,
   setMode: (mode) => set({ mode }),
