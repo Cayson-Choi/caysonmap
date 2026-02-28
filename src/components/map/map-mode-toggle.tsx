@@ -2,33 +2,21 @@
 
 import { useTranslations } from 'next-intl';
 import { useMapStore } from '@/stores/map-store';
-import type { MapMode } from '@/types';
 
-export default function MapModeToggle() {
+export default function NaverMapLink() {
   const t = useTranslations('map');
-  const { mode, setMode } = useMapStore();
+  const { center, zoom } = useMapStore();
 
-  const modes: { value: MapMode; label: string }[] = [
-    { value: 'naver', label: t('naver') },
-    { value: 'kakao', label: t('kakao') },
-    { value: 'both', label: t('both') },
-  ];
+  const naverMapUrl = `https://map.naver.com/v5/?c=${center.lng},${center.lat},${zoom},0,0,0,dh`;
 
   return (
-    <div className="flex bg-card border border-border rounded-lg overflow-hidden">
-      {modes.map(({ value, label }) => (
-        <button
-          key={value}
-          onClick={() => setMode(value)}
-          className={`px-4 py-2 text-sm font-medium transition-colors ${
-            mode === value
-              ? 'bg-primary text-primary-foreground'
-              : 'hover:bg-border'
-          }`}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
+    <a
+      href={naverMapUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg text-sm font-medium hover:bg-border transition-colors"
+    >
+      {t('openInNaver')}
+    </a>
   );
 }

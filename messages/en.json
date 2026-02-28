@@ -24,9 +24,8 @@
     "orContinueWith": "or"
   },
   "map": {
-    "naver": "Naver Map",
     "kakao": "Kakao Map",
-    "both": "Both",
+    "openInNaver": "Open in Naver Map",
     "myLocation": "My Location",
     "zoomIn": "Zoom In",
     "zoomOut": "Zoom Out"

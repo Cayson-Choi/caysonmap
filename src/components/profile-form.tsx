@@ -3,7 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import type { Profile, MapMode, Theme, Language } from '@/types';
+import type { Profile, Theme, Language } from '@/types';
 
 type TranslationKey = 'light' | 'dark' | 'system';
 
@@ -15,7 +15,6 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
   const t = useTranslations('profile');
   const tCommon = useTranslations('common');
   const [nickname, setNickname] = useState(profile?.nickname || '');
-  const [preferredMap, setPreferredMap] = useState<MapMode>(profile?.preferred_map || 'kakao');
   const [theme, setTheme] = useState<Theme>(profile?.theme || 'light');
   const [language, setLanguage] = useState<Language>(profile?.language || 'ko');
   const [saving, setSaving] = useState(false);
@@ -31,7 +30,7 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
       .from('profiles')
       .update({
         nickname,
-        preferred_map: preferredMap,
+        preferred_map: 'kakao',
         theme,
         language,
       })
@@ -41,7 +40,6 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
       setMessage(error.message);
     } else {
       setMessage(t('saveSuccess'));
-      // 언어가 변경되면 쿠키 업데이트 후 새로고침
       if (language !== profile.language) {
         document.cookie = `locale=${language};path=/;max-age=31536000`;
         window.location.reload();
@@ -76,25 +74,6 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
           onChange={(e) => setNickname(e.target.value)}
           className="w-full px-4 py-3 border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
         />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2">{t('preferredMap')}</label>
-        <div className="flex gap-3">
-          {(['naver', 'kakao', 'both'] as MapMode[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => setPreferredMap(m)}
-              className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                preferredMap === m
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'border-border hover:bg-card'
-              }`}
-            >
-              {m === 'naver' ? '네이버' : m === 'kakao' ? '카카오' : '동시보기'}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div>
