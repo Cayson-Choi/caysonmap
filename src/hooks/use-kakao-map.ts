@@ -9,12 +9,12 @@ interface UseKakaoMapOptions {
   onZoomChanged?: (zoom: number) => void;
 }
 
-// 네이버맵 줌 레벨(1-21)과 카카오맵 레벨(1-14, 값이 클수록 축소)을 변환
-function naverZoomToKakaoLevel(naverZoom: number): number {
-  return Math.max(1, Math.min(14, 21 - naverZoom));
+// 줌 레벨(1-21)과 카카오맵 레벨(1-14, 값이 클수록 축소)을 변환
+function zoomToKakaoLevel(zoom: number): number {
+  return Math.max(1, Math.min(14, 21 - zoom));
 }
 
-function kakaoLevelToNaverZoom(kakaoLevel: number): number {
+function kakaoLevelToZoom(kakaoLevel: number): number {
   return Math.max(1, Math.min(21, 21 - kakaoLevel));
 }
 
@@ -66,10 +66,10 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
     [],
   );
 
-  const updateZoom = useCallback((naverZoom: number) => {
+  const updateZoom = useCallback((zoom: number) => {
     if (mapInstanceRef.current) {
       isExternalUpdate.current = true;
-      mapInstanceRef.current.setLevel(naverZoomToKakaoLevel(naverZoom));
+      mapInstanceRef.current.setLevel(zoomToKakaoLevel(zoom));
       setTimeout(() => {
         isExternalUpdate.current = false;
       }, 100);
@@ -87,7 +87,7 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
         try {
           const map = new kakao.maps.Map(mapRef.current, {
             center: new kakao.maps.LatLng(center.lat, center.lng),
-            level: naverZoomToKakaoLevel(zoom),
+            level: zoomToKakaoLevel(zoom),
           });
 
           mapInstanceRef.current = map;
@@ -101,7 +101,7 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged }: Us
 
           kakao.maps.event.addListener(map, 'zoom_changed', () => {
             if (isExternalUpdate.current) return;
-            onZoomChanged?.(kakaoLevelToNaverZoom(map.getLevel()));
+            onZoomChanged?.(kakaoLevelToZoom(map.getLevel()));
           });
         } catch (err) {
           if (!destroyed) setError(err instanceof Error ? err.message : '지도 초기화 실패');

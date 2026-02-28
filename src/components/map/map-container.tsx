@@ -2,11 +2,10 @@
 
 import { useCallback } from 'react';
 import { useMapStore } from '@/stores/map-store';
-import NaverMapView from './naver-map-view';
 import KakaoMapView from './kakao-map-view';
 
 export default function MapContainer() {
-  const { mode, center, zoom, setCenter, setZoom } = useMapStore();
+  const { center, zoom, setCenter, setZoom } = useMapStore();
 
   const handleCenterChanged = useCallback(
     (lat: number, lng: number) => {
@@ -22,51 +21,14 @@ export default function MapContainer() {
     [setZoom],
   );
 
-  if (mode === 'naver') {
-    return (
-      <div className="w-full h-full">
-        <NaverMapView
-          center={center}
-          zoom={zoom}
-          onCenterChanged={handleCenterChanged}
-          onZoomChanged={handleZoomChanged}
-        />
-      </div>
-    );
-  }
-
-  if (mode === 'kakao') {
-    return (
-      <div className="w-full h-full">
-        <KakaoMapView
-          center={center}
-          zoom={zoom}
-          onCenterChanged={handleCenterChanged}
-          onZoomChanged={handleZoomChanged}
-        />
-      </div>
-    );
-  }
-
-  // both 모드: 좌우 분할
   return (
-    <div className="w-full h-full flex">
-      <div className="w-1/2 h-full border-r border-border">
-        <NaverMapView
-          center={center}
-          zoom={zoom}
-          onCenterChanged={handleCenterChanged}
-          onZoomChanged={handleZoomChanged}
-        />
-      </div>
-      <div className="w-1/2 h-full">
-        <KakaoMapView
-          center={center}
-          zoom={zoom}
-          onCenterChanged={handleCenterChanged}
-          onZoomChanged={handleZoomChanged}
-        />
-      </div>
+    <div className="w-full h-full">
+      <KakaoMapView
+        center={center}
+        zoom={zoom}
+        onCenterChanged={handleCenterChanged}
+        onZoomChanged={handleZoomChanged}
+      />
     </div>
   );
 }
