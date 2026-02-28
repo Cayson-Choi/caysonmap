@@ -26,12 +26,12 @@ const CATEGORIES = [
 
 export default function MapControlPanel() {
   const t = useTranslations('map');
-  const { radius, activeCategories, setCenter, setRadius, toggleCategory, triggerSearch } = useMapStore();
+  const { radius, activeCategories, setSelectedLocation, setRadius, toggleCategory, triggerSearch } = useMapStore();
 
   const handleMyLocation = () => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition((pos) => {
-      setCenter(pos.coords.latitude, pos.coords.longitude);
+      setSelectedLocation(pos.coords.latitude, pos.coords.longitude);
       triggerSearch();
     });
   };

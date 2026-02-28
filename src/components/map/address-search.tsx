@@ -19,7 +19,7 @@ interface AddressSearchProps {
 
 export default function AddressSearch({ onAddBookmark }: AddressSearchProps) {
   const t = useTranslations('map');
-  const { setCenter, triggerSearch } = useMapStore();
+  const { setSelectedLocation, triggerSearch } = useMapStore();
   const [query, setQuery] = useState('');
   const [suggestions, setSuggestions] = useState<PlaceResult[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
@@ -62,12 +62,12 @@ export default function AddressSearch({ onAddBookmark }: AddressSearchProps) {
   const selectPlace = useCallback((place: PlaceResult) => {
     const lat = parseFloat(place.y);
     const lng = parseFloat(place.x);
-    setCenter(lat, lng);
+    setSelectedLocation(lat, lng);
     triggerSearch();
     setQuery(place.place_name);
     setShowDropdown(false);
     setSuggestions([]);
-  }, [setCenter, triggerSearch]);
+  }, [setSelectedLocation, triggerSearch]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!showDropdown || suggestions.length === 0) {

@@ -24,6 +24,7 @@ function createBookmarkMarkerSvg(): string {
 
 interface KakaoMapViewProps {
   center: { lat: number; lng: number };
+  selectedLocation: { lat: number; lng: number } | null;
   zoom: number;
   radius: number;
   activeCategories: string[];
@@ -38,6 +39,7 @@ interface KakaoMapViewProps {
 
 export default function KakaoMapView({
   center,
+  selectedLocation,
   zoom,
   radius,
   activeCategories,
@@ -84,12 +86,12 @@ export default function KakaoMapView({
     if (ready) updateZoom(zoom);
   }, [zoom, ready, updateZoom]);
 
-  // Circle overlay
+  // Circle overlay — follows selectedLocation, not center
   useEffect(() => {
-    if (!ready || !mapInstanceRef.current) return;
+    if (!ready || !mapInstanceRef.current || !selectedLocation) return;
     const map = mapInstanceRef.current;
     const circle = new kakao.maps.Circle({
-      center: new kakao.maps.LatLng(center.lat, center.lng),
+      center: new kakao.maps.LatLng(selectedLocation.lat, selectedLocation.lng),
       radius,
       strokeWeight: 2,
       strokeColor: '#3b82f6',
@@ -100,7 +102,7 @@ export default function KakaoMapView({
     });
     circle.setMap(map);
     return () => { circle.setMap(null); };
-  }, [center.lat, center.lng, radius, ready, mapInstanceRef]);
+  }, [selectedLocation, radius, ready, mapInstanceRef]);
 
   // Global callback for bookmark add from InfoWindow
   const addBookmarkRef = useRef(onAddBookmark);
@@ -125,9 +127,9 @@ export default function KakaoMapView({
     markersRef.current.clear();
     infoWindowRef.current?.close();
 
-    if (activeCategories.length === 0) return;
+    if (activeCategories.length === 0 || !selectedLocation) return;
 
-    const searchCenter = map.getCenter();
+    const searchCenter = new kakao.maps.LatLng(selectedLocation.lat, selectedLocation.lng);
     const places = new kakao.maps.services.Places();
 
     activeCategories.forEach((code) => {

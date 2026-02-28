@@ -12,7 +12,7 @@ interface MapContainerProps {
 }
 
 export default function MapContainer({ bookmarks, onAddBookmark, onRemoveBookmark }: MapContainerProps) {
-  const { center, zoom, radius, activeCategories, searchVersion, setCenter, setZoom, triggerSearch } = useMapStore();
+  const { center, selectedLocation, zoom, radius, activeCategories, searchVersion, setCenter, setSelectedLocation, setZoom, triggerSearch } = useMapStore();
 
   const handleCenterChanged = useCallback(
     (lat: number, lng: number) => setCenter(lat, lng),
@@ -26,16 +26,17 @@ export default function MapContainer({ bookmarks, onAddBookmark, onRemoveBookmar
 
   const handleMapClick = useCallback(
     (lat: number, lng: number) => {
-      setCenter(lat, lng);
+      setSelectedLocation(lat, lng);
       triggerSearch();
     },
-    [setCenter, triggerSearch],
+    [setSelectedLocation, triggerSearch],
   );
 
   return (
     <div className="w-full h-full">
       <KakaoMapView
         center={center}
+        selectedLocation={selectedLocation}
         zoom={zoom}
         radius={radius}
         activeCategories={activeCategories}
