@@ -63,8 +63,11 @@ export function useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged, onMa
 
   const updateZoom = useCallback((zoom: number) => {
     if (mapInstanceRef.current) {
+      const currentLevel = mapInstanceRef.current.getLevel();
+      const targetLevel = zoomToKakaoLevel(zoom);
+      if (currentLevel === targetLevel) return;
       isExternalUpdate.current = true;
-      mapInstanceRef.current.setLevel(zoomToKakaoLevel(zoom));
+      mapInstanceRef.current.setLevel(targetLevel);
       setTimeout(() => { isExternalUpdate.current = false; }, 100);
     }
   }, []);

@@ -23,7 +23,7 @@ export const useMapStore = create<MapState>((set) => ({
   activeCategories: [],
   searchVersion: 0,
   setCenter: (lat, lng) => set({ center: { lat, lng } }),
-  setSelectedLocation: (lat, lng) => set({ selectedLocation: { lat, lng }, center: { lat, lng } }),
+  setSelectedLocation: (lat, lng) => set({ selectedLocation: { lat, lng } }),
   setZoom: (zoom) => set({ zoom }),
   setRadius: (radius) => set((state) => ({ radius, searchVersion: state.searchVersion + 1 })),
   toggleCategory: (code) =>
