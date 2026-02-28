@@ -24,8 +24,9 @@
     "orContinueWith": "또는"
   },
   "map": {
+    "naver": "네이버 지도",
     "kakao": "카카오 지도",
-    "openInNaver": "네이버 지도에서 보기",
+    "both": "동시 보기",
     "myLocation": "내 위치",
     "zoomIn": "확대",
     "zoomOut": "축소"

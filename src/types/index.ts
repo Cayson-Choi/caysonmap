@@ -1,3 +1,4 @@
+export type MapMode = 'naver' | 'kakao' | 'both';
 export type Theme = 'light' | 'dark' | 'system';
 export type Language = 'ko' | 'en';
 
@@ -7,7 +8,7 @@ export interface Profile {
   nickname: string | null;
   avatar_url: string | null;
   provider: string;
-  preferred_map: 'kakao';
+  preferred_map: MapMode;
   theme: Theme;
   language: Language;
   created_at: string;
