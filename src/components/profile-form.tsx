@@ -2,10 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
+import { useTheme } from 'next-themes';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import type { Profile, Theme, Language } from '@/types';
-
-type TranslationKey = 'light' | 'dark' | 'system';
+import type { Profile, Language } from '@/types';
 
 interface ProfileFormProps {
   profile: Profile | null;
@@ -14,8 +14,10 @@ interface ProfileFormProps {
 export default function ProfileForm({ profile }: ProfileFormProps) {
   const t = useTranslations('profile');
   const tCommon = useTranslations('common');
+  const { setTheme: applyTheme } = useTheme();
+  const router = useRouter();
   const [nickname, setNickname] = useState(profile?.nickname || '');
-  const [theme, setTheme] = useState<Theme>(profile?.theme || 'light');
+  const [isDark, setIsDark] = useState(profile?.theme === 'dark');
   const [language, setLanguage] = useState<Language>(profile?.language || 'ko');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
@@ -24,6 +26,8 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
     if (!profile) return;
     setSaving(true);
     setMessage('');
+
+    const theme = isDark ? 'dark' : 'light';
 
     const supabase = createClient();
     const { error } = await supabase
@@ -40,9 +44,10 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
       setMessage(error.message);
     } else {
       setMessage(t('saveSuccess'));
+      applyTheme(theme);
       if (language !== profile.language) {
         document.cookie = `locale=${language};path=/;max-age=31536000`;
-        window.location.reload();
+        router.refresh();
       }
     }
     setSaving(false);
@@ -78,39 +83,45 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
 
       <div>
         <label className="block text-sm font-medium mb-2">{t('theme')}</label>
-        <div className="flex gap-3">
-          {(['light', 'dark', 'system'] as Theme[]).map((th) => (
-            <button
-              key={th}
-              onClick={() => setTheme(th)}
-              className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                theme === th
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'border-border hover:bg-card'
+        <div className="flex items-center gap-3">
+          <span className={`text-sm ${!isDark ? 'font-semibold' : 'text-muted'}`}>{t('light')}</span>
+          <button
+            type="button"
+            onClick={() => setIsDark(!isDark)}
+            className={`relative inline-flex h-7 w-[52px] items-center rounded-full transition-colors ${
+              isDark ? 'bg-primary' : 'bg-border'
+            }`}
+            aria-label="Toggle theme"
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                isDark ? 'translate-x-[26px]' : 'translate-x-1'
               }`}
-            >
-              {t(th as TranslationKey)}
-            </button>
-          ))}
+            />
+          </button>
+          <span className={`text-sm ${isDark ? 'font-semibold' : 'text-muted'}`}>{t('dark')}</span>
         </div>
       </div>
 
       <div>
         <label className="block text-sm font-medium mb-2">{t('language')}</label>
-        <div className="flex gap-3">
-          {(['ko', 'en'] as Language[]).map((lang) => (
-            <button
-              key={lang}
-              onClick={() => setLanguage(lang)}
-              className={`px-4 py-2 rounded-lg border text-sm font-medium transition-colors ${
-                language === lang
-                  ? 'bg-primary text-primary-foreground border-primary'
-                  : 'border-border hover:bg-card'
+        <div className="flex items-center gap-3">
+          <span className={`text-sm ${language === 'ko' ? 'font-semibold' : 'text-muted'}`}>{t('korean')}</span>
+          <button
+            type="button"
+            onClick={() => setLanguage(language === 'ko' ? 'en' : 'ko')}
+            className={`relative inline-flex h-7 w-[52px] items-center rounded-full transition-colors ${
+              language === 'en' ? 'bg-primary' : 'bg-border'
+            }`}
+            aria-label="Toggle language"
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-sm transition-transform ${
+                language === 'en' ? 'translate-x-[26px]' : 'translate-x-1'
               }`}
-            >
-              {lang === 'ko' ? t('korean') : t('english')}
-            </button>
-          ))}
+            />
+          </button>
+          <span className={`text-sm ${language === 'en' ? 'font-semibold' : 'text-muted'}`}>{t('english')}</span>
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef } from 'react';
 import { useKakaoMap } from '@/hooks/use-kakao-map';
 
 interface KakaoMapViewProps {
@@ -17,7 +18,24 @@ export default function KakaoMapView({
   onZoomChanged,
   className = '',
 }: KakaoMapViewProps) {
-  const { mapRef, ready, error } = useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged });
+  const { mapRef, updateCenter, updateZoom, ready, error } = useKakaoMap({ center, zoom, onCenterChanged, onZoomChanged });
+  const isInitial = useRef(true);
+
+  useEffect(() => {
+    if (isInitial.current) {
+      isInitial.current = false;
+      return;
+    }
+    if (ready) {
+      updateCenter(center.lat, center.lng);
+    }
+  }, [center.lat, center.lng, ready, updateCenter]);
+
+  useEffect(() => {
+    if (ready) {
+      updateZoom(zoom);
+    }
+  }, [zoom, ready, updateZoom]);
 
   return (
     <div className={`w-full h-full relative ${className}`}>
