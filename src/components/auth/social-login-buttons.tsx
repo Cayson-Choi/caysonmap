@@ -6,19 +6,25 @@ import { useState } from 'react';
 
 export default function SocialLoginButtons() {
   const t = useTranslations('auth');
+  const tCommon = useTranslations('common');
   const [loading, setLoading] = useState<string | null>(null);
+  const [error, setError] = useState('');
 
   const handleOAuth = async (provider: 'google' | 'kakao') => {
     try {
       setLoading(provider);
+      setError('');
       await signInWithOAuth(provider);
     } catch {
+      setError(tCommon('oauthFailed'));
       setLoading(null);
     }
   };
 
   return (
     <div className="flex flex-col gap-3">
+      {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+
       <button
         onClick={() => handleOAuth('google')}
         disabled={loading !== null}

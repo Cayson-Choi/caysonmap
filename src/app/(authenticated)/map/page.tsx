@@ -23,7 +23,7 @@ export default function MapPage() {
       <MapScripts />
       <div className="h-[calc(100vh-64px)] relative">
         {/* Address search - top left */}
-        <div className="absolute top-4 left-4 z-10">
+        <div className="absolute top-2 left-2 right-2 sm:right-auto sm:left-4 sm:top-4 z-10">
           <AddressSearch
             bookmarks={bookmarks}
             onAddBookmark={handleAddBookmark}
@@ -32,7 +32,7 @@ export default function MapPage() {
         </div>
 
         {/* Control panel - top right */}
-        <div className="absolute top-4 right-4 z-10">
+        <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-10">
           <MapControlPanel />
         </div>
 

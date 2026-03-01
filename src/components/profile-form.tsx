@@ -136,7 +136,9 @@ export default function ProfileForm({ profile }: ProfileFormProps) {
         disabled={saving}
         className="px-6 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
       >
-        {saving ? '...' : tCommon('save')}
+        {saving ? (
+          <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin inline-block" />
+        ) : tCommon('save')}
       </button>
     </div>
   );

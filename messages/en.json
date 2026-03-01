@@ -6,7 +6,12 @@
     "save": "Save",
     "cancel": "Cancel",
     "confirm": "OK",
-    "logout": "Logout"
+    "logout": "Logout",
+    "menu": "Menu",
+    "retry": "Retry",
+    "errorTitle": "Something went wrong",
+    "errorDescription": "An error occurred while loading this page.",
+    "oauthFailed": "Social login failed"
   },
   "auth": {
     "login": "Login",
@@ -21,7 +26,9 @@
     "signupWithEmail": "Sign up with Email",
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
-    "orContinueWith": "or"
+    "orContinueWith": "or",
+    "passwordMismatch": "Passwords do not match",
+    "checkEmail": "Please check your email to complete signup."
   },
   "map": {
     "kakao": "Kakao Map",
@@ -34,6 +41,13 @@
     "zoomIn": "Zoom In",
     "zoomOut": "Zoom Out",
     "noResults": "No results found",
+    "searchUnavailable": "Search unavailable",
+    "geolocationUnsupported": "Geolocation not supported",
+    "geolocationDenied": "Location permission denied",
+    "geolocationUnavailable": "Location unavailable",
+    "geolocationTimeout": "Location request timed out",
+    "mapLoadFailed": "Map loading failed",
+    "mapLoading": "Loading map...",
     "bookmark": "Bookmark",
     "addBookmark": "Add Bookmark",
     "removeBookmark": "Remove Bookmark",

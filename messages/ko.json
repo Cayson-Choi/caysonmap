@@ -6,7 +6,12 @@
     "save": "저장",
     "cancel": "취소",
     "confirm": "확인",
-    "logout": "로그아웃"
+    "logout": "로그아웃",
+    "menu": "메뉴",
+    "retry": "다시 시도",
+    "errorTitle": "문제가 발생했습니다",
+    "errorDescription": "페이지를 불러오는 중 오류가 발생했습니다.",
+    "oauthFailed": "소셜 로그인에 실패했습니다"
   },
   "auth": {
     "login": "로그인",
@@ -21,7 +26,9 @@
     "signupWithEmail": "이메일로 회원가입",
     "noAccount": "계정이 없으신가요?",
     "hasAccount": "이미 계정이 있으신가요?",
-    "orContinueWith": "또는"
+    "orContinueWith": "또는",
+    "passwordMismatch": "비밀번호가 일치하지 않습니다",
+    "checkEmail": "이메일을 확인하여 가입을 완료해주세요."
   },
   "map": {
     "kakao": "카카오 지도",
@@ -34,6 +41,13 @@
     "zoomIn": "확대",
     "zoomOut": "축소",
     "noResults": "검색 결과가 없습니다",
+    "searchUnavailable": "검색을 사용할 수 없습니다",
+    "geolocationUnsupported": "위치 서비스를 지원하지 않는 브라우저입니다",
+    "geolocationDenied": "위치 권한이 거부되었습니다",
+    "geolocationUnavailable": "위치 정보를 사용할 수 없습니다",
+    "geolocationTimeout": "위치 요청 시간 초과",
+    "mapLoadFailed": "지도 로딩 실패",
+    "mapLoading": "지도 로딩 중...",
     "bookmark": "즐겨찾기",
     "addBookmark": "즐겨찾기 추가",
     "removeBookmark": "즐겨찾기 삭제",

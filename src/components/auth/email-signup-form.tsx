@@ -18,7 +18,7 @@ export default function EmailSignupForm() {
     setError('');
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setError(t('passwordMismatch'));
       return;
     }
 
@@ -38,7 +38,7 @@ export default function EmailSignupForm() {
     return (
       <div className="text-center p-6 bg-card rounded-lg border border-border">
         <p className="text-lg font-medium">📧</p>
-        <p className="mt-2">이메일을 확인하여 가입을 완료해주세요.</p>
+        <p className="mt-2">{t('checkEmail')}</p>
         <p className="text-sm text-muted mt-1">{email}</p>
       </div>
     );
@@ -98,7 +98,9 @@ export default function EmailSignupForm() {
         disabled={loading}
         className="w-full px-4 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
       >
-        {loading ? '...' : t('signupWithEmail')}
+        {loading ? (
+          <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin inline-block" />
+        ) : t('signupWithEmail')}
       </button>
     </form>
   );

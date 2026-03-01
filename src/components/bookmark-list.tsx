@@ -8,7 +8,11 @@ export default function BookmarkList() {
   const { bookmarks, loading, removeBookmark } = useBookmarks();
 
   if (loading) {
-    return <p className="text-sm text-muted">...</p>;
+    return (
+      <div className="flex items-center gap-2 py-2">
+        <span className="w-4 h-4 border-2 border-muted border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
   }
 
   if (bookmarks.length === 0) {

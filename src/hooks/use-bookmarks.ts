@@ -15,9 +15,11 @@ export interface Bookmark {
 export function useBookmarks() {
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const supabaseRef = useRef(createClient());
 
   const fetchBookmarks = useCallback(async () => {
+    setError(null);
     const supabase = supabaseRef.current;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
@@ -26,12 +28,15 @@ export function useBookmarks() {
       return;
     }
 
-    const { data } = await supabase
+    const { data, error: fetchError } = await supabase
       .from('bookmarks')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
+    if (fetchError) {
+      setError(fetchError.message);
+    }
     setBookmarks(data ?? []);
     setLoading(false);
   }, []);
@@ -45,13 +50,17 @@ export function useBookmarks() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return null;
 
-    const { data, error } = await supabase
+    const { data, error: insertError } = await supabase
       .from('bookmarks')
       .insert({ user_id: user.id, name, lat, lng, address: address ?? null })
       .select()
       .single();
 
-    if (!error && data) {
+    if (insertError) {
+      setError(insertError.message);
+      return null;
+    }
+    if (data) {
       setBookmarks((prev) => [data, ...prev]);
     }
     return data;
@@ -59,19 +68,23 @@ export function useBookmarks() {
 
   const removeBookmark = useCallback(async (id: string) => {
     const supabase = supabaseRef.current;
-    const { error } = await supabase
+    const { error: deleteError } = await supabase
       .from('bookmarks')
       .delete()
       .eq('id', id);
 
-    if (!error) {
-      setBookmarks((prev) => prev.filter((b) => b.id !== id));
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
     }
+    setBookmarks((prev) => prev.filter((b) => b.id !== id));
   }, []);
+
+  const clearError = useCallback(() => setError(null), []);
 
   const isBookmarked = useCallback((lat: number, lng: number) => {
     return bookmarks.some((b) => Math.abs(b.lat - lat) < 0.0001 && Math.abs(b.lng - lng) < 0.0001);
   }, [bookmarks]);
 
-  return { bookmarks, loading, addBookmark, removeBookmark, isBookmarked, refetch: fetchBookmarks };
+  return { bookmarks, loading, error, clearError, addBookmark, removeBookmark, isBookmarked, refetch: fetchBookmarks };
 }

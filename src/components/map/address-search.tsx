@@ -34,13 +34,21 @@ export default function AddressSearch({ bookmarks, onAddBookmark, onRemoveBookma
     return bookmarks?.find((b) => Math.abs(b.lat - lat) < 0.0001 && Math.abs(b.lng - lng) < 0.0001);
   }, [bookmarks]);
 
+  const [searchError, setSearchError] = useState<string | null>(null);
+
   const searchPlaces = useCallback((keyword: string) => {
+    setSearchError(null);
     if (!keyword.trim()) {
       setSuggestions([]);
       setShowDropdown(false);
       return;
     }
-    if (typeof kakao === 'undefined' || !kakao.maps?.services) return;
+    if (typeof kakao === 'undefined' || !kakao.maps?.services) {
+      setSearchError(t('searchUnavailable'));
+      setSuggestions([]);
+      setShowDropdown(true);
+      return;
+    }
 
     const places = new kakao.maps.services.Places();
     places.keywordSearch(keyword.trim(), (result, status) => {
@@ -48,12 +56,13 @@ export default function AddressSearch({ bookmarks, onAddBookmark, onRemoveBookma
         setSuggestions(result.slice(0, 10) as unknown as PlaceResult[]);
         setShowDropdown(true);
         setSelectedIndex(-1);
+        setSearchError(null);
       } else {
         setSuggestions([]);
         setShowDropdown(true);
       }
     });
-  }, []);
+  }, [t]);
 
   const handleInputChange = useCallback((value: string) => {
     setQuery(value);
@@ -121,7 +130,7 @@ export default function AddressSearch({ bookmarks, onAddBookmark, onRemoveBookma
           onChange={(e) => handleInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder={t('searchPlaceholder')}
-          className="w-72 px-4 py-2.5 text-sm bg-transparent outline-none placeholder:text-muted"
+          className="w-full sm:w-64 md:w-72 px-4 py-2.5 text-sm bg-transparent outline-none placeholder:text-muted"
         />
         <button
           onClick={() => searchPlaces(query)}
@@ -136,7 +145,9 @@ export default function AddressSearch({ bookmarks, onAddBookmark, onRemoveBookma
 
       {showDropdown && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg max-h-72 overflow-y-auto z-50">
-          {suggestions.length === 0 ? (
+          {searchError ? (
+            <div className="px-4 py-3 text-sm text-red-500">{searchError}</div>
+          ) : suggestions.length === 0 ? (
             <div className="px-4 py-3 text-sm text-muted">{t('noResults')}</div>
           ) : (
             suggestions.map((place, index) => {

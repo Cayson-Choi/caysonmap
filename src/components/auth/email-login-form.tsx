@@ -68,7 +68,9 @@ export default function EmailLoginForm() {
         disabled={loading}
         className="w-full px-4 py-3 bg-primary text-primary-foreground rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
       >
-        {loading ? '...' : t('loginWithEmail')}
+        {loading ? (
+          <span className="w-4 h-4 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin inline-block" />
+        ) : t('loginWithEmail')}
       </button>
     </form>
   );

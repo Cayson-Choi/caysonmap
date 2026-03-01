@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { useMapStore } from '@/stores/map-store';
 
@@ -27,20 +28,48 @@ const CATEGORIES = [
 export default function MapControlPanel() {
   const t = useTranslations('map');
   const { radius, activeCategories, setCenter, setSelectedLocation, setRadius, toggleCategory, triggerSearch } = useMapStore();
+  const [expanded, setExpanded] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const handleMyLocation = () => {
-    if (!navigator.geolocation) return;
-    navigator.geolocation.getCurrentPosition((pos) => {
-      setSelectedLocation(pos.coords.latitude, pos.coords.longitude);
-      setCenter(pos.coords.latitude, pos.coords.longitude);
-      triggerSearch();
-    });
+    setLocationError(null);
+    if (!navigator.geolocation) {
+      setLocationError(t('geolocationUnsupported'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setSelectedLocation(pos.coords.latitude, pos.coords.longitude);
+        setCenter(pos.coords.latitude, pos.coords.longitude);
+        triggerSearch();
+      },
+      (err) => {
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            setLocationError(t('geolocationDenied'));
+            break;
+          case err.POSITION_UNAVAILABLE:
+            setLocationError(t('geolocationUnavailable'));
+            break;
+          case err.TIMEOUT:
+            setLocationError(t('geolocationTimeout'));
+            break;
+        }
+      },
+      { timeout: 10000 },
+    );
   };
+
+  useEffect(() => {
+    if (!locationError) return;
+    const timer = setTimeout(() => setLocationError(null), 5000);
+    return () => clearTimeout(timer);
+  }, [locationError]);
 
   const formatRadius = (r: number) => (r >= 1000 ? `${(r / 1000).toFixed(1)}km` : `${r}m`);
 
-  return (
-    <div className="bg-card border border-border rounded-lg shadow-lg w-52 max-h-[calc(100vh-120px)] overflow-y-auto">
+  const panelContent = (
+    <div className={`${expanded ? 'block' : 'hidden'} md:block bg-card border border-border rounded-lg shadow-lg w-52 max-h-[calc(100vh-120px)] overflow-y-auto mt-2 md:mt-0`}>
       {/* My Location */}
       <button
         onClick={handleMyLocation}
@@ -52,6 +81,10 @@ export default function MapControlPanel() {
         </svg>
         {t('currentLocation')}
       </button>
+
+      {locationError && (
+        <div className="px-4 py-2 text-xs text-red-500">{locationError}</div>
+      )}
 
       <div className="border-t border-border" />
 
@@ -99,5 +132,27 @@ export default function MapControlPanel() {
         </div>
       </div>
     </div>
+  );
+
+  return (
+    <>
+      {/* Mobile toggle button */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="md:hidden w-10 h-10 bg-card border border-border rounded-lg shadow-lg flex items-center justify-center"
+        aria-label={t('layers')}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="4" y1="21" x2="4" y2="14" />
+          <line x1="4" y1="10" x2="4" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12" y2="3" />
+          <line x1="20" y1="21" x2="20" y2="16" />
+          <line x1="20" y1="12" x2="20" y2="3" />
+        </svg>
+      </button>
+
+      {panelContent}
+    </>
   );
 }
